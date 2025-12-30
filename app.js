@@ -19,7 +19,7 @@ const errorHandler = require('./middlewares/errorHandler')
 const AppError = require('./utils/AppError')
 //* 
 
-require('dotenv').config({ path: './config/index.env' })
+// require('dotenv').config({ path: './config/index.env' })
 const app = express()
 // Handeler Erorr cors
 // conect Mongodb 
@@ -66,7 +66,7 @@ app.use(errorHandler)
 
 
 
-app.listen(process.env.PORT || 3010, (err) => {
+app.listen(process.env.PORT || 6925, (err) => {
     // conectRedis() 
     console.log(`conect to port::${process.env.PORT}  `)
 })
