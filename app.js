@@ -42,7 +42,7 @@ app.use(cookieParser())
 // })
 
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: "https://nivato.ir",
     credentials: true,
 }))
 

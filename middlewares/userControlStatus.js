@@ -13,10 +13,10 @@ module.exports = (req, res, next) => {
     } catch (error) {
         res.clearCookie("auth_token", {
             httpOnly: true, // 🚫 قابل دسترسی از جاوااسکریپت نیست
-            // secure: process.env.NODE_ENV === "production", // فقط HTTPS
-            // sameSite: "strict", // محافظت در برابر CSRF
-            secure: false, // چون لوکال هستی و HTTPS نداری
-            sameSite: "lax", // برای تست لوکال ok هست
+            secure: true, // فقط HTTPS
+            sameSite: "strict", // محافظت در برابر CSRF
+            // secure: false, // چون لوکال هستی و HTTPS نداری
+            // sameSite: "lax", // برای تست لوکال ok هست
         });
         return res.sendStatus(200)
     }

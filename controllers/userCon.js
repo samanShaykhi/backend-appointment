@@ -110,10 +110,10 @@ exports.RefreshToken = asyncHandler(async (req, res, next) => {
         if (error.name === "TokenExpiredError" || error.name === "JsonWebTokenError") {
             res.clearCookie("auth_token", {
                 httpOnly: true, // 🚫 قابل دسترسی از جاوااسکریپت نیست
-                // secure: process.env.NODE_ENV === "production", // فقط HTTPS
-                // sameSite: "strict", // محافظت در برابر CSRF
-                secure: false, // چون لوکال هستی و HTTPS نداری
-                sameSite: "lax", // برای تست لوکال ok هست
+                secure: true, // فقط HTTPS
+                sameSite: "strict", // محافظت در برابر CSRF
+                // secure: false, // چون لوکال هستی و HTTPS نداری
+                // sameSite: "lax", // برای تست لوکال ok هست
             });
             return res.sendStatus(200);
         }
@@ -134,10 +134,10 @@ exports.logout = asyncHandler(async (req, res, next) => {
 
     res.clearCookie("auth_token", {
         httpOnly: true, // 🚫 قابل دسترسی از جاوااسکریپت نیست
-        // secure: process.env.NODE_ENV === "production", // فقط HTTPS
-        // sameSite: "strict", // محافظت در برابر CSRF
-        secure: false, // چون لوکال هستی و HTTPS نداری
-        sameSite: "lax", // برای تست لوکال ok هست
+        secure: true, // فقط HTTPS
+        sameSite: "strict", // محافظت در برابر CSRF
+        // secure: false, // چون لوکال هستی و HTTPS نداری
+        // sameSite: "lax", // برای تست لوکال ok هست
     });
     return res.sendStatus(200)
 
@@ -183,6 +183,6 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
     user.lastName = lastName
     user.email = email
     await user.save()
-    return res.status(200).json({user})
+    return res.status(200).json({ user })
 })
 // exports.Register = async
