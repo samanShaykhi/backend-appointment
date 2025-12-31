@@ -66,7 +66,7 @@ app.use(errorHandler)
 
 
 
-app.listen(process.env.PORT || 6925, (err) => {
+app.listen(process.env.PORT, (err) => {
     // conectRedis() 
     console.log(`conect to port::${process.env.PORT}  `)
 })
