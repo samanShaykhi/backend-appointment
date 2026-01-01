@@ -14,11 +14,9 @@ const routerNotification = require('./routers/RouterNot')
 const routerComment = require('./routers/routerComment')
 const routerArticle = require('./routers/routerArticle')
 const logger = require('./utils/logger')
-const { conectRedis } = require('./redis/redice')
 const errorHandler = require('./middlewares/errorHandler')
 const AppError = require('./utils/AppError')
 //* 
-
 const app = express()
 // Handeler Erorr cors
 // conect Mongodb 
@@ -32,13 +30,7 @@ app.use('/public', express.static(`${appRoot.path}/public`))
 // End aplication JSON
 //* Cookie Parser
 app.use(cookieParser())
-//* Cookie Parser
-// app.use((req, res, next) => {
-//     res.setHeader('Access-Control-Allow-Origin', '*')
-//     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-//     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE')
-//     next()
-// })
+
 
 app.use(cors({
     origin: "https://nivato.ir",
