@@ -19,7 +19,6 @@ const errorHandler = require('./middlewares/errorHandler')
 const AppError = require('./utils/AppError')
 //* 
 
-// require('dotenv').config({ path: './config/index.env' })
 const app = express()
 // Handeler Erorr cors
 // conect Mongodb 

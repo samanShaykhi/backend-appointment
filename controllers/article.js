@@ -38,7 +38,7 @@ exports.uploadGallery = asyncHandler(async (req, res, next) => {
 
 exports.getImages = asyncHandler(async (req, res, next) => {
     const rootPath = path.resolve("./");
-    const imagesDir = path.join(rootPath, "public", 'uploads', "gallery");
+    const imagesDir = path.join(rootPath, "public", 'uploads', "images","article");
     fs.readdir(imagesDir, (err, files) => {
         if (err) {
             return res.status(500).json({ error: "خطا در خواندن فولدر" });
