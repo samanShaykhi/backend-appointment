@@ -26,8 +26,8 @@ exports.validationConsultant = Yup.object().shape({
         .max(1000, "توضیحات مشاور نباید بیشتر از 1000 کاراکتر باشد"),
     amount: Yup.string()
         .required("مبلغ الزامی می باشد")
-        .min(4, "مبلغ نباید کمتر از 4 کاراکتر باشد")
-        .max(20, "مبلغ نباید بیشتر از 20 کاراکتر باشد"),
+        .min(3, "مبلغ نباید کمتر از 3 کاراکتر باشد")
+        .max(12, "مبلغ نباید بیشتر از 12 کاراکتر باشد"),
     experience: Yup.string()
         .required("میزان تجربه مشاور الزامی می باشد"),
     relatedCategories: Yup.string()
