@@ -50,12 +50,11 @@ exports.CommentStatus = asyncHandler(async (req, res, next) => {
     const findConsultant = await Consultant.findById(findComment.consultantId)
     if (findConsultant) {
         if (!findConsultant.score) {
-            const newAverage = findConsultant.numberClients / findComment.score
-            findConsultant.score = newAverage
+            findConsultant.score = findComment.score
         } else {
             const total_score_befor = findConsultant.score * findConsultant.numberClients
             const total_score_befor_new = findComment.score + total_score_befor
-            const newAverage = findConsultant.numberClients / total_score_befor_new
+            const newAverage = total_score_befor_new / findConsultant.numberClients
             findConsultant.score = newAverage
         }
     }
@@ -67,7 +66,7 @@ exports.CommentStatus = asyncHandler(async (req, res, next) => {
         user: findComment.creatorId,
     })
     await Notification.create({
-        text: ` مشاور گرامی کاربر ${findComment.creator.firstName} ${findComment.creator.lastName} یک دیگاه برای شما به گذاشت `,
+        text: ` مشاور گرامی کاربر ${findComment.creator.firstName} ${findComment.creator.lastName} یک دیگاه برای شما گذاشت `,
         user: findComment.consultantId,
     })
     return res.sendStatus(200)

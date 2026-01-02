@@ -53,7 +53,7 @@ exports.AddReservation = asyncHandler(async (req, res, next) => {
         expireAt
     })
     await createReservation.save()
-    await deleteQueueReserv.add("delete-docreserv", { id: createReservation._id }, { delay: 5000 });
+    await deleteQueueReserv.add("delete-docreserv", { id: createReservation._id }, { delay });
     // Not From Consultant
     await Notification.create({
         text: ` یک نوبت توسط ${createFirstName} ${createLastName} در  تاریخ ${date} و ساعت ${hourse} رزرو شد.`,
