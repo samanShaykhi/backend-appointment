@@ -44,15 +44,20 @@ exports.AddReservation = asyncHandler(async (req, res, next) => {
     ));
     const delay = expireAt.getTime() - Date.now();
     // Expiret Colection
-    const createReservation = new Reservation({
-        date,
-        hourse,
-        userCreator: { firstName: createFirstName, lastName: createLastName },
-        user: userCreator._id,
-        consoltant: findConsultant._id,
-        expireAt
-    })
-    await createReservation.save()
+    let createReservation
+    try {
+        createReservation = await Reservation.create({
+            date,
+            hourse,
+            userCreator: { firstName: createFirstName, lastName: createLastName },
+            user: userCreator._id,
+            consoltant: findConsultant._id,
+            expireAt
+        })
+
+    } catch (error) {
+        return next(new AppError('این نوبت قبلا رزرو شد.', 301))
+    }
     await deleteQueueReserv.add("delete-docreserv", { id: createReservation._id }, { delay });
     // Not From Consultant
     await Notification.create({

@@ -36,7 +36,7 @@ exports.validationConsultant = Yup.object().shape({
 exports.ValidationInpArtEdite = Yup.object().shape({
     metaDiscription: Yup.string()
         .max(500, "متا دیسکریپشن نباید بیشتر از 500 کاراکتر باشد")
-        .min(80, "متا دیسکریپشن باید حداقل 5 کاراکتر باشد")
+        .min(80, "متا دیسکریپشن باید حداقل 80 کاراکتر باشد")
         .required("متا دیسکریپشن الزامی است"),
 
     articleTitle: Yup.string()
@@ -44,6 +44,6 @@ exports.ValidationInpArtEdite = Yup.object().shape({
         .min(40, "عنوان باید حداقل 40 کاراکتر باشد")
         .required("عنوان الزامی است"),
     body: Yup.string()
-        .min(1000, "مقاله باید حداقل 1000 کاراکتر باشد")
+        .min(1000, "مقاله باید حداقل 1000 کاراکتر باشد") 
         .required("مقاله الزامی است"),
 })
