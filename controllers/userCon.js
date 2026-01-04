@@ -5,6 +5,8 @@ const { schemaProfileEdite } = require("../secureYup/validatinInps")
 const jwt = require('jsonwebtoken')
 const AppError = require("../utils/AppError")
 const asyncHandler = require("../middlewares/asyncHandler")
+const { redisClient } = require("../redis/redice")
+const { default: axios } = require("axios")
 
 exports.loginUser = asyncHandler(async (req, res, next) => {
     const {
@@ -47,6 +49,72 @@ exports.SinIn = asyncHandler(async (req, res, next) => {
         await schemaProfileEdite.validate({ phoneNumber }, { abortEarly: false })
     } catch (error) {
         return next(new AppError({ errors: error.errors }, 301))
+    }
+    const key = `otp:${phoneNumber}`;
+    const now = Date.now();
+
+    const getData = await redisClient.get(key)
+
+    if (getData) {
+        const parsed = JSON.parse(getData);
+        if (now - parsed.lastSentAt < 2 * 60 * 1000) {
+            return next(new AppError('باید ۲ دقیقه صبر کنی', 429))
+        }
+    }
+
+    // create Redis
+    const expiresAt = now + 2 * 60 * 1000;
+    await redisClient.set(
+        key,
+        JSON.stringify({
+            expiresAt,
+            lastSentAt: now,
+            attempts: 0,
+        }),
+        {
+            PX: 5 * 60 * 1000, // TTL
+        }
+    );
+    // create Redis
+
+    // Send code phone number
+    const apiKey = process.env.APIKEY;
+    const baseURL = "https://edge.ippanel.com/v1";
+    try {
+        await axios.post(
+            `${baseURL}/api/send`,
+            {
+                code: process.env.PATERNCODE,
+                recipient: phoneNumber,
+                variables: { OTP: String(OTP) }
+            },
+            { headers: { Authorization: apiKey, "Content-Type": "application/json" } }
+        );
+    } catch (error) {
+        return next(new AppError('عملیات ارسال رمز شکست خورد بعدا تلاش کنید', 430))
+    }
+    // Send code phone number
+})
+
+exports.vrifyOTP = asyncHandler(async (req, res, next) => {
+    const { phoneNumber, codeOTP } = req.body
+    const API_KEY = process.env.APIKEY;
+    const PATTERN_CODE = process.env.PATERNCODE;
+    try {
+        await axios("https://edge.ippanel.com/v1/api/acl/auth/confirm_otp", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": API_KEY,
+            },
+            data: JSON.stringify({
+                pattern_code: PATTERN_CODE,
+                recipient: phoneNumber,
+                values: { OTP: codeOTP },
+            }),
+        });
+    } catch (error) {
+        return next(new AppError('کد اشتباست', 430))
     }
     const AreTheyAnyUser = await User.findOne({ phoneNumber })
     if (AreTheyAnyUser) {

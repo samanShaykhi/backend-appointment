@@ -16,6 +16,7 @@ const routerArticle = require('./routers/routerArticle')
 const logger = require('./utils/logger')
 const errorHandler = require('./middlewares/errorHandler')
 const AppError = require('./utils/AppError')
+const { conectRedis } = require('./redis/redice')
 //* 
 const app = express()
 // Handeler Erorr cors
@@ -58,7 +59,7 @@ app.use(errorHandler)
 
 
 app.listen(process.env.PORT, (err) => {
-    // conectRedis() 
+    conectRedis()
     console.log(`conect to port::${process.env.PORT}  `)
 })
 //* End Handeler Erorr cors  
