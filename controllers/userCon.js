@@ -65,18 +65,29 @@ exports.SinIn = asyncHandler(async (req, res, next) => {
 
     // Send code phone number
     const apiKey = process.env.APIKEY;
-    const baseURL = "https://edge.ippanel.com/v1";
     const OTP = String(Math.floor(100000 + Math.random() * 900000));
     try {
-        await axios.post(
-            `${baseURL}/api/send`,
+        await axios.post("https://edge.ippanel.com/v1/api/send",
             {
+                sending_type: "pattern",
+                from_number: "+983000505",
                 code: process.env.PATERNCODE,
-                recipient: phoneNumber,
-                variables: { OTP }
+                recipients: [phoneNumber],
+                params: { OTP }
             },
             { headers: { Authorization: apiKey, "Content-Type": "application/json" } }
         );
+
+
+        await axios.post("https://edge.ippanel.com/v1/api/send", {
+            sending_type: "pattern",
+            from_number: "+983000505",
+            code: process.env.PATTERN_CODE,
+            recipients: [phoneNumber], // مثل +98912...
+            params: { code: OTP } // نام کلیدها دقیقاً مطابق متغیرهای پترن
+        }, {
+            headers: { Authorization: process.env.APIKEY, "Content-Type": "application/json" }
+        });
 
         // create Redis
         const expiresAt = now + 2 * 60 * 1000;
@@ -165,7 +176,7 @@ exports.vrifyOTP = asyncHandler(async (req, res, next) => {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000, 
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         return res.status(200).json({ accessToken, user: UserCreate })
     }
@@ -181,9 +192,9 @@ exports.RefreshToken = asyncHandler(async (req, res, next) => {
     } catch (error) {
         if (error.name === "TokenExpiredError" || error.name === "JsonWebTokenError") {
             res.clearCookie("auth_token", {
-                httpOnly: true, 
-                secure: true, 
-                sameSite: "strict", 
+                httpOnly: true,
+                secure: true,
+                sameSite: "strict",
             });
             return res.sendStatus(200);
         }
@@ -203,9 +214,9 @@ exports.RefreshGetUser = asyncHandler(async (req, res, next) => {
 exports.logout = asyncHandler(async (req, res, next) => {
 
     res.clearCookie("auth_token", {
-        httpOnly: true, 
-        secure: true, 
-        sameSite: "strict", 
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
 
     });
     return res.sendStatus(200)
