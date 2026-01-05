@@ -1,6 +1,9 @@
 const { createClient } = require("redis")
 const client = createClient({
-    url: process.env.REDIS_URL
+    socket: {
+        path: process.env.REDIS_URL
+    }
+
 })
 client.on('error', error => console.log(`error redis: ${error}`))
 const conectRedis = async () => {
