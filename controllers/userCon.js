@@ -76,17 +76,17 @@ exports.SinIn = asyncHandler(async (req, res, next) => {
         }
     );
     // create Redis
-
     // Send code phone number
     const apiKey = process.env.APIKEY;
     const baseURL = "https://edge.ippanel.com/v1";
+    const OTP = String(Math.floor(100000 + Math.random() * 900000));
     try {
         await axios.post(
             `${baseURL}/api/send`,
             {
                 code: process.env.PATERNCODE,
                 recipient: phoneNumber,
-                variables: { OTP: String(OTP) }
+                variables: { OTP }
             },
             { headers: { Authorization: apiKey, "Content-Type": "application/json" } }
         );
