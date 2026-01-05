@@ -96,6 +96,7 @@ exports.SinIn = asyncHandler(async (req, res, next) => {
         return res.sendStatus(200)
 
     } catch (error) {
+        console.log(error)
         return next(new AppError('عملیات ارسال رمز شکست خورد بعدا تلاش کنید', 430))
     }
     // Send code phone number
