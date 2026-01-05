@@ -72,7 +72,7 @@ exports.SinIn = asyncHandler(async (req, res, next) => {
                 sending_type: "pattern",
                 from_number: "+983000505",
                 code: process.env.PATERNCODE,
-                recipients: [phoneNumber],
+                recipients: [`+98${Number(phoneNumber)}`],
                 params: { OTP }
             },
             { headers: { Authorization: apiKey, "Content-Type": "application/json" } }
