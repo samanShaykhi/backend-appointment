@@ -78,17 +78,6 @@ exports.SinIn = asyncHandler(async (req, res, next) => {
             { headers: { Authorization: apiKey, "Content-Type": "application/json" } }
         );
 
-
-        await axios.post("https://edge.ippanel.com/v1/api/send", {
-            sending_type: "pattern",
-            from_number: "+983000505",
-            code: process.env.PATTERN_CODE,
-            recipients: [phoneNumber], // مثل +98912...
-            params: { code: OTP } // نام کلیدها دقیقاً مطابق متغیرهای پترن
-        }, {
-            headers: { Authorization: process.env.APIKEY, "Content-Type": "application/json" }
-        });
-
         // create Redis
         const expiresAt = now + 2 * 60 * 1000;
         await redisClient.set(
