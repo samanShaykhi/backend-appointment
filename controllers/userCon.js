@@ -62,20 +62,7 @@ exports.SinIn = asyncHandler(async (req, res, next) => {
         }
     }
 
-    // create Redis
-    const expiresAt = now + 2 * 60 * 1000;
-    await redisClient.set(
-        key,
-        JSON.stringify({
-            expiresAt,
-            lastSentAt: now,
-            attempts: 0,
-        }),
-        {
-            PX: 5 * 60 * 1000, // TTL
-        }
-    );
-    // create Redis
+
     // Send code phone number
     const apiKey = process.env.APIKEY;
     const baseURL = "https://edge.ippanel.com/v1";
@@ -90,6 +77,24 @@ exports.SinIn = asyncHandler(async (req, res, next) => {
             },
             { headers: { Authorization: apiKey, "Content-Type": "application/json" } }
         );
+
+        // create Redis
+        const expiresAt = now + 2 * 60 * 1000;
+        await redisClient.set(
+            key,
+            JSON.stringify({
+                OTP,
+                expiresAt,
+                lastSentAt: now,
+                attempts: 0,
+            }),
+            {
+                EX: 120, // TTL
+            }
+        );
+        // create Redis
+        return res.sendStatus(200)
+
     } catch (error) {
         return next(new AppError('عملیات ارسال رمز شکست خورد بعدا تلاش کنید', 430))
     }
@@ -98,39 +103,38 @@ exports.SinIn = asyncHandler(async (req, res, next) => {
 
 exports.vrifyOTP = asyncHandler(async (req, res, next) => {
     const { phoneNumber, codeOTP } = req.body
-    const API_KEY = process.env.APIKEY;
-    const PATTERN_CODE = process.env.PATERNCODE;
-    try {
-        await axios.post("https://edge.ippanel.com/v1/api/acl/auth/confirm_otp",
-            {
-                pattern_code: PATTERN_CODE,
-                recipient: phoneNumber,
-                values: { OTP: codeOTP },
-            },
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": API_KEY,
-                }
-            }
-            ,
-
-        );
-    } catch (error) {
-        return next(new AppError('کد اشتباست', 430))
+    // vrifyOTP
+    const key = `otp:${phoneNumber}`;
+    const data = await redisClient.get(key);
+    if (!data) {
+        return next(new AppError('کد منقضی شده', 400));
     }
+    const parsed = JSON.parse(data);
+
+    if (parsed.attempts >= 5) {
+        await redisClient.del(key);
+        return next(new AppError('تعداد تلاش بیش از حد', 429));
+    }
+
+    if (parsed.code !== codeOTP) {
+        parsed.attempts += 1;
+        await redisClient.set(key, JSON.stringify(parsed), { EX: 120 });
+        return next(new AppError('کد اشتباه است', 403));
+    }
+
+    await redisClient.del(key);
+    // vrifyOTP
+
     const AreTheyAnyUser = await User.findOne({ phoneNumber })
     if (AreTheyAnyUser) {
         const createUserFromToken = { id: AreTheyAnyUser._id }
         const refreshToken = jwt.sign(createUserFromToken, process.env.PASS_JWT, { expiresIn: "7d" });
         const accessToken = jwt.sign(createUserFromToken, process.env.PASS_JWT, { expiresIn: "15m" });
         res.cookie("auth_token", refreshToken, {
-            httpOnly: true, // 🚫 قابل دسترسی از جاوااسکریپت نیست
-            // secure: process.env.NODE_ENV === "production", // فقط HTTPS
-            // sameSite: "strict", // محافظت در برابر CSRF
-            secure: false, // چون لوکال هستی و HTTPS نداری
-            sameSite: "lax", // برای تست لوکال ok هست
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 روز
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         return res.status(200).json({ accessToken, user: AreTheyAnyUser })
     }
@@ -141,12 +145,10 @@ exports.vrifyOTP = asyncHandler(async (req, res, next) => {
         const accessToken = jwt.sign(createUserFromToken, process.env.PASS_JWT, { expiresIn: "15m" });
 
         res.cookie("auth_token", refreshToken, {
-            httpOnly: true, // 🚫 قابل دسترسی از جاوااسکریپت نیست
-            // secure: process.env.NODE_ENV === "production", // فقط HTTPS
-            // sameSite: "strict", // محافظت در برابر CSRF
-            secure: false, // چون لوکال هستی و HTTPS نداری
-            sameSite: "lax", // برای تست لوکال ok هست
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 روز
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         return res.status(200).json({ accessToken, user: findConsultantFromPhoneNumber })
     }
@@ -159,12 +161,10 @@ exports.vrifyOTP = asyncHandler(async (req, res, next) => {
         const refreshToken = jwt.sign(createUserFromToken, process.env.PASS_JWT, { expiresIn: "7d" });
         const accessToken = jwt.sign(createUserFromToken, process.env.PASS_JWT, { expiresIn: "15m" });
         res.cookie("auth_token", refreshToken, {
-            httpOnly: true, // 🚫 قابل دسترسی از جاوااسکریپت نیست
-            // secure: process.env.NODE_ENV === "production", // فقط HTTPS
-            // sameSite: "strict", // محافظت در برابر CSRF
-            secure: false, // چون لوکال هستی و HTTPS نداری
-            sameSite: "lax", // برای تست لوکال ok هست
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 روز
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000, 
         });
         return res.status(200).json({ accessToken, user: UserCreate })
     }
@@ -180,11 +180,9 @@ exports.RefreshToken = asyncHandler(async (req, res, next) => {
     } catch (error) {
         if (error.name === "TokenExpiredError" || error.name === "JsonWebTokenError") {
             res.clearCookie("auth_token", {
-                httpOnly: true, // 🚫 قابل دسترسی از جاوااسکریپت نیست
-                secure: true, // فقط HTTPS
-                sameSite: "strict", // محافظت در برابر CSRF
-                // secure: false, // چون لوکال هستی و HTTPS نداری
-                // sameSite: "lax", // برای تست لوکال ok هست
+                httpOnly: true, 
+                secure: true, 
+                sameSite: "strict", 
             });
             return res.sendStatus(200);
         }
@@ -204,11 +202,10 @@ exports.RefreshGetUser = asyncHandler(async (req, res, next) => {
 exports.logout = asyncHandler(async (req, res, next) => {
 
     res.clearCookie("auth_token", {
-        httpOnly: true, // 🚫 قابل دسترسی از جاوااسکریپت نیست
-        secure: true, // فقط HTTPS
-        sameSite: "strict", // محافظت در برابر CSRF
-        // secure: false, // چون لوکال هستی و HTTPS نداری
-        // sameSite: "lax", // برای تست لوکال ok هست
+        httpOnly: true, 
+        secure: true, 
+        sameSite: "strict", 
+
     });
     return res.sendStatus(200)
 
