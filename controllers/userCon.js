@@ -113,11 +113,10 @@ exports.vrifyOTP = asyncHandler(async (req, res, next) => {
     const parsed = JSON.parse(data);
 
     if (parsed.attempts >= 5) {
-        await redisClient.del(key);
         return next(new AppError('تعداد تلاش بیش از حد', 429));
     }
 
-    if (parsed.code !== codeOTP) {
+    if (parsed.OTP !== codeOTP) {
         parsed.attempts += 1;
         await redisClient.set(key, JSON.stringify(parsed), { EX: 120 });
         return next(new AppError('کد اشتباه است', 403));
