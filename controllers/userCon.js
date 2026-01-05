@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken')
 const AppError = require("../utils/AppError")
 const asyncHandler = require("../middlewares/asyncHandler")
 const { redisClient } = require("../redis/redice")
-const { default: axios } = require("axios")
+const axios = require('axios');
 
 exports.loginUser = asyncHandler(async (req, res, next) => {
     const {
@@ -101,18 +101,21 @@ exports.vrifyOTP = asyncHandler(async (req, res, next) => {
     const API_KEY = process.env.APIKEY;
     const PATTERN_CODE = process.env.PATERNCODE;
     try {
-        await axios("https://edge.ippanel.com/v1/api/acl/auth/confirm_otp", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": API_KEY,
-            },
-            data: JSON.stringify({
+        await axios.post("https://edge.ippanel.com/v1/api/acl/auth/confirm_otp",
+            {
                 pattern_code: PATTERN_CODE,
                 recipient: phoneNumber,
                 values: { OTP: codeOTP },
-            }),
-        });
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": API_KEY,
+                }
+            }
+            ,
+
+        );
     } catch (error) {
         return next(new AppError('کد اشتباست', 430))
     }
