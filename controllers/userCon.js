@@ -39,7 +39,7 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        return res.status(200).json({ token, user: findConsultantFromPhoneNumber })
+        return res.status(200).json({ token:accessToken, user: findConsultantFromPhoneNumber })
     }
     const createNewUser = await User.create({
         phoneNumber,
@@ -53,7 +53,7 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        return res.status(200).json({ token, user: createNewUser })
+        return res.status(200).json({ token:accessToken, user: createNewUser })
     }
 
 })
