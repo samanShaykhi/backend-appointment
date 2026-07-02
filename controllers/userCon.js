@@ -19,8 +19,8 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
     }
     const findUserFromPhoneNumber = await User.findOne({ phoneNumber })
     if (findUserFromPhoneNumber) {
-        const refreshToken = jwt.sign(findUserFromPhoneNumber._id, process.env.PASS_JWT, { expiresIn: "7d" });
-        const accessToken = jwt.sign(findUserFromPhoneNumber._id, process.env.PASS_JWT, { expiresIn: "15m" });
+        const refreshToken = jwt.sign(findUserFromPhoneNumber, process.env.PASS_JWT, { expiresIn: "7d" });
+        const accessToken = jwt.sign(findUserFromPhoneNumber, process.env.PASS_JWT, { expiresIn: "15m" });
         res.cookie("auth_token", refreshToken, {
             httpOnly: true,
             secure: true,
@@ -31,16 +31,13 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
     }
     const findConsultantFromPhoneNumber = await Consultant.findOne({ phoneNumber })
     if (findConsultantFromPhoneNumber) {
-        const refreshToken = jwt.sign(findConsultantFromPhoneNumber._id, process.env.PASS_JWT, { expiresIn: "7d" });
-        const accessToken = jwt.sign(findConsultantFromPhoneNumber._id, process.env.PASS_JWT, { expiresIn: "15m" });
+        const refreshToken = jwt.sign(findConsultantFromPhoneNumber, process.env.PASS_JWT, { expiresIn: "7d" });
+        const accessToken = jwt.sign(findConsultantFromPhoneNumber, process.env.PASS_JWT, { expiresIn: "15m" });
         res.cookie("auth_token", refreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-        const token = jwt.sign({ userId: findConsultantFromPhoneNumber._id }, process.env.PASS_JWT, {
-            expiresIn: "60d",
         });
         return res.status(200).json({ token, user: findConsultantFromPhoneNumber })
     }
@@ -48,8 +45,8 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
         phoneNumber,
     })
     if (createNewUser) {
-        const refreshToken = jwt.sign(createNewUser._id, process.env.PASS_JWT, { expiresIn: "7d" });
-        const accessToken = jwt.sign(createNewUser._id, process.env.PASS_JWT, { expiresIn: "15m" });
+        const refreshToken = jwt.sign(createNewUser, process.env.PASS_JWT, { expiresIn: "7d" });
+        const accessToken = jwt.sign(createNewUser, process.env.PASS_JWT, { expiresIn: "15m" });
         res.cookie("auth_token", refreshToken, {
             httpOnly: true,
             secure: true,
