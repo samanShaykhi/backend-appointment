@@ -19,13 +19,26 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
     }
     const findUserFromPhoneNumber = await User.findOne({ phoneNumber })
     if (findUserFromPhoneNumber) {
-        const token = jwt.sign({ userId: findUserFromPhoneNumber._id }, process.env.PASS_JWT, {
-            expiresIn: "60d",
+        const refreshToken = jwt.sign(findUserFromPhoneNumber._id, process.env.PASS_JWT, { expiresIn: "7d" });
+        const accessToken = jwt.sign(findUserFromPhoneNumber._id, process.env.PASS_JWT, { expiresIn: "15m" });
+        res.cookie("auth_token", refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        return res.status(200).json({ token, user: findUserFromPhoneNumber })
+        return res.status(200).json({ token: accessToken, user: findUserFromPhoneNumber })
     }
     const findConsultantFromPhoneNumber = await Consultant.findOne({ phoneNumber })
     if (findConsultantFromPhoneNumber) {
+        const refreshToken = jwt.sign(findConsultantFromPhoneNumber._id, process.env.PASS_JWT, { expiresIn: "7d" });
+        const accessToken = jwt.sign(findConsultantFromPhoneNumber._id, process.env.PASS_JWT, { expiresIn: "15m" });
+        res.cookie("auth_token", refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
         const token = jwt.sign({ userId: findConsultantFromPhoneNumber._id }, process.env.PASS_JWT, {
             expiresIn: "60d",
         });
@@ -35,8 +48,13 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
         phoneNumber,
     })
     if (createNewUser) {
-        const token = jwt.sign({ userId: createNewUser._id }, process.env.PASS_JWT, {
-            expiresIn: "60d",
+        const refreshToken = jwt.sign(createNewUser._id, process.env.PASS_JWT, { expiresIn: "7d" });
+        const accessToken = jwt.sign(createNewUser._id, process.env.PASS_JWT, { expiresIn: "15m" });
+        res.cookie("auth_token", refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         return res.status(200).json({ token, user: createNewUser })
     }
@@ -121,7 +139,6 @@ exports.vrifyOTP = asyncHandler(async (req, res, next) => {
         await redisClient.set(key, JSON.stringify(parsed), { EX: 120 });
         return next(new AppError('کد اشتباه است', 403));
     }
-
     await redisClient.del(key);
     // vrifyOTP
 
